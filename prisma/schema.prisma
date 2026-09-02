@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id            String   @id
+  name          String
+  email         String
+  phone         String
+  ltvPaise      Int
+  riskTier      String
+  contactPrefs  String
+  dndStartHour  Int      @default(21)
+  dndEndHour    Int      @default(9)
+  optedOut      Boolean  @default(false)
+  paydayDay     Int      @default(1)
+  createdAt     DateTime @default(now())
+
+  subscriptions   Subscription[]
+  invoices        Invoice[]
+  checkouts       CheckoutSession[]
+  mandates        Mandate[]
+  paymentAttempts PaymentAttempt[]
+  cases           RecoveryCase[]
+}
+
+model Subscription {
+  id           String   @id
+  customerId   String
+  customer     Customer @relation(fields: [customerId], references: [id])
+  plan         String
+  mrrPaise     Int
+  status       String
+  nextBillDate DateTime
+  createdAt    DateTime @default(now())
+
+  paymentAttempts PaymentAttempt[]
+  cases           RecoveryCase[]
+}
+
+model Invoice {
+  id          String   @id
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  amountPaise Int
+  dueDate     DateTime
+  status      String
+  createdAt   DateTime @default(now())
+
+  cases RecoveryCase[]
+}
+
+model CheckoutSession {
+  id          String   @id
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  amountPaise Int
+  stepDropped String
+  abandonedAt DateTime
+  recovered   Boolean  @default(false)
+
+  cases RecoveryCase[]
+}
+
+model Mandate {
+  id          String   @id
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  type        String
+  status      String
+  amountPaise Int
+  nextDebitAt DateTime
+  windowHint  String
+
+  cases RecoveryCase[]
+}
+
+model PaymentAttempt {
+  id             String        @id
+  customerId     String?
+  customer       Customer?     @relation(fields: [customerId], references: [id])
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  caseId         String?
+  case           RecoveryCase? @relation(fields: [caseId], references: [id])
+  amountPaise    Int
+  status         String
+  declineCode    String?
+  gateway        String
+  attemptedAt    DateTime
+  sourceType     String
+}
+
+model RecoveryCase {
+  id               String    @id
+  customerId       String
+  customer         Customer  @relation(fields: [customerId], references: [id])
+  direction        String
+  sourceType       String
+  sourceId         String
+  subscriptionId   String?
+  subscription     Subscription? @relation(fields: [subscriptionId], references: [id])
+  invoiceId        String?
+  invoice          Invoice?      @relation(fields: [invoiceId], references: [id])
+  checkoutId       String?
+  checkout         CheckoutSession? @relation(fields: [checkoutId], references: [id])
+  mandateId        String?
+  mandate          Mandate?      @relation(fields: [mandateId], references: [id])
+  openedAt         DateTime
+  closedAt         DateTime?
+  status           String
+  fsmState         String
+  rootCause        String
+  amountAtRisk     Int
+  amountRecovered  Int       @default(0)
+  stoppedReason    String?
+  policyVersion    String
+  attemptsUsed     Int       @default(0)
+  nudgeSent        Boolean   @default(false)
+  discountOfferedBps Int     @default(0)
+  promiseDate      DateTime?
+  promiseStatus    String?
+  lastContactAt    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  attempts PaymentAttempt[]
+  audits   AuditLog[]
+
+  @@index([direction, status])
+  @@index([rootCause])
+}
+
+model AuditLog {
+  id            String       @id
+  caseId        String
+  case          RecoveryCase @relation(fields: [caseId], references: [id])
+  timestamp     DateTime
+  actor         String
+  action        String
+  inputJson     String
+  outputJson    String
+  policyVersion String
+  channel       String?
+  messageBody   String?
+}
+
+model BatchRun {
+  id              String   @id
+  startedAt       DateTime
+  finishedAt      DateTime?
+  casesProcessed  Int      @default(0)
+  amountAtRisk    Int      @default(0)
+  amountRecovered Int      @default(0)
+  notes           String?
+}

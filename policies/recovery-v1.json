@@ -1,0 +1,72 @@
+{
+  "version": "recovery-v1",
+  "maxAutoRetries": 3,
+  "maxNudges": 1,
+  "contactGapHours": 48,
+  "timeboxDays": 14,
+  "discountCeilingBps": 1000,
+  "batchDiscountBudgetPaise": 25000000,
+  "paydayAlignDays": [1, 5, 7, 15],
+  "rootCauses": {
+    "insufficient_funds": {
+      "rightFix": "smart_retry",
+      "channel": "none",
+      "maxRetries": 3,
+      "notes": "Cash-flow timing. Align retry to likely payday. Do not spam."
+    },
+    "expired_card": {
+      "rightFix": "update_details_nudge",
+      "channel": "email",
+      "maxRetries": 1,
+      "notes": "Stale instrument. Nudge to update, then retry once."
+    },
+    "issuer_risk": {
+      "rightFix": "alt_gateway",
+      "channel": "none",
+      "maxRetries": 2,
+      "notes": "Generic issuer decline. Try backup method / alt gateway."
+    },
+    "card_not_supported": {
+      "rightFix": "alt_method",
+      "channel": "email",
+      "maxRetries": 1,
+      "notes": "Route to UPI / netbanking / backup card."
+    },
+    "fraud_suspected": {
+      "rightFix": "human_escalation",
+      "channel": "none",
+      "maxRetries": 0,
+      "notes": "Never auto-retry. Escalate to human queue."
+    },
+    "gateway_timeout": {
+      "rightFix": "immediate_retry_alt_gateway",
+      "channel": "none",
+      "maxRetries": 2,
+      "notes": "Network/gateway issue. Immediate retry on a different gateway."
+    },
+    "checkout_abandoned": {
+      "rightFix": "dropoff_nudge",
+      "channel": "sms",
+      "maxRetries": 0,
+      "notes": "Recover the session, do not charge blindly."
+    },
+    "invoice_overdue": {
+      "rightFix": "tone_ladder",
+      "channel": "email",
+      "maxRetries": 0,
+      "notes": "B2B receivables: reminder → firm → PTP → escalate."
+    },
+    "mandate_window_miss": {
+      "rightFix": "mandate_sequencer",
+      "channel": "none",
+      "maxRetries": 3,
+      "notes": "NACH/UPI autopay: retry only inside the allowed debit window."
+    },
+    "silent_debtor": {
+      "rightFix": "hinglish_voice",
+      "channel": "voice",
+      "maxRetries": 0,
+      "notes": "Voice recovery in Hinglish after digital channels stall."
+    }
+  }
+}

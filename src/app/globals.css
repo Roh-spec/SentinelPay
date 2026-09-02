@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+}
+
+:root {
+  --bg: #000000;
+  --paper: #09090b;
+  --card: #121215;
+  --line: rgba(255, 255, 255, 0.08);
+}
+
+html,
+body {
+  background-color: var(--bg);
+  color: #f4f4f5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: #000000;
+  background-image:
+    radial-gradient(1000px 400px at 50% 0%, rgba(255, 255, 255, 0.03), transparent 70%);
+  min-height: 100vh;
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+
+/* Minimalist dark card utility */
+.clean-card {
+  background-color: #09090b;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.clean-card-hover {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.clean-card-hover:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  background-color: #0d0d10;
+}
+
+/* Sleek minimalist scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
