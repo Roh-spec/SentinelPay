@@ -1,4 +1,4 @@
-# ARIA — Autonomous AI Revenue Recovery Engine
+# SentinelPay — Autonomous AI Revenue Recovery Engine
 
 > **Intelligent, policy-driven revenue recovery agent built for modern payment ecosystems.**  
 > Continuously watches for revenue at risk across subscriptions, one-off payment degradations, abandoned checkouts, overdue B2B invoices, and bank mandates—diagnosing root causes, executing bounded interventions, enforcing hard safety guardrails, and proving recovered revenue on an interactive dashboard backed by an append-only audit trail.
@@ -23,7 +23,7 @@
 
 Involuntary churn and payment drop-offs cost businesses up to **10–15% of ARR**. Generic recovery systems rely on blind, brute-force retry schedules that trigger customer complaints, bank bounce penalties, and merchant risk flags.
 
-**ARIA** transforms revenue recovery from a dumb cron-job into an **autonomous, explainable, multi-rail agent**:
+**SentinelPay** transforms revenue recovery from a dumb cron-job into an **autonomous, explainable, multi-rail agent**:
 1. **Multi-Rail Signal Ingestion**: Unifies failed cards, UPI autopay/mandate misses, abandoned checkout carts, and overdue B2B invoices onto a single spine.
 2. **Deterministic Root-Cause Diagnosis**: Classifies gateway decline codes with deterministic precision rather than relying purely on hallucination-prone LLM calls.
 3. **Contextual Policy Interventions**: Aligns retry timing with customer paydays, triggers single-touch expiring recovery links, sequences banking mandate windows, and deploys Hinglish AI voice outreach.
@@ -66,7 +66,7 @@ flowchart TD
 
 ## 🔌 The 6 Recovery Adapters (Multi-Rail)
 
-Instead of a single-purpose dunning tool, ARIA provides a unified recovery spine supporting 6 specialized payment rails:
+Instead of a single-purpose dunning tool, SentinelPay provides a unified recovery spine supporting 6 specialized payment rails:
 
 | # | Direction | Signal Source | Typical Root Cause | Autonomous Policy Strategy |
 |---|---|---|---|---|
