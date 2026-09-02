@@ -12,7 +12,7 @@
 - [The 6 Recovery Adapters (Multi-Rail)](#-the-6-recovery-adapters-multi-rail)
 - [Safety Guardrails & Stopping Rules](#-safety-guardrails--stopping-rules)
 - [Interactive Dashboard & Features](#-interactive-dashboard--features)
-- [Technology Stack & Data Model](#-technology-stack--data-model)
+- [Technology Stack](#-technology-stack)
 - [Getting Started](#-getting-started)
 - [Versioned Policy Engine](#-versioned-policy-engine)
 - [API Reference](#-api-reference)
@@ -58,7 +58,7 @@ flowchart TD
 2. **Diagnose (`src/engine/diagnose.ts`)**: Deterministically maps raw decline codes (`insufficient_funds`, `expired_card`, `fraud_suspected`, `do_not_honor`, `gateway_timeout`) to classified root causes.
 3. **Decide (`src/engine/policy.ts`)**: Evaluates versioned JSON policies (`policies/recovery-v1.json`) against customer attributes (LTV, risk tier, payday date, contact history).
 4. **Execute (`src/engine/fsm.ts`)**: Advances the case through bounded finite states:
-   $$\text{OPEN} \longrightarrow \text{RETRY\_1} \longrightarrow \text{RETRY\_2} \longrightarrow \text{RETRY\_3} \longrightarrow \text{NUDGE\_SENT} \longrightarrow \text{CLOSED}$$
+   `OPEN` → `RETRY_1` → `RETRY_2` → `RETRY_3` → `NUDGE_SENT` → `CLOSED`
 5. **Enforce Guardrails (`src/engine/stopping.ts`)**: Programmatic stopping rules evaluate fraud flags, timebox duration, discount budgets, and quiet hours.
 6. **Audit & Measure (`src/engine/measure.ts`)**: Logs immutable audit records with timestamp, actor (`system`/`agent`/`human`), input/output JSON, and message bodies.
 
@@ -73,7 +73,7 @@ Instead of a single-purpose dunning tool, SentinelPay provides a unified recover
 | **1** | **Failed Subscriptions** | `PaymentAttempt` (`subscription`) | `insufficient_funds`, `expired_card` | Aligns retries to customer payday (Days 1, 5, 7, 15) to avoid bounce fees, or sends card update email. |
 | **2** | **Payment Degradation** | `PaymentAttempt` (`one_off`) | `gateway_timeout`, `issuer_risk` | Switches payment presentation route to backup gateway (`razorpay_backup`) or requests backup card. |
 | **3** | **Checkout Drop-Off** | `CheckoutSession` | `checkout_abandoned` | Dispatches a single 24-hour expiring payment link via SMS at the dropped step without blind charging. |
-| **4** | **B2B Receivables** | `Invoice` | `invoice_overdue` | Executes a graduated tone ladder (friendly reminder $\to$ firm notice) and arms a Promise-to-Pay (PTP) tracker. |
+| **4** | **B2B Receivables** | `Invoice` | `invoice_overdue` | Executes a graduated tone ladder (friendly reminder → firm notice) and arms a Promise-to-Pay (PTP) tracker. |
 | **5** | **Mandate Sequencer** | `Mandate` | `mandate_window_miss` | Sequences auto-debit retries inside verified NACH / UPI Autopay presentation windows (Days 1–7 vs 14–21). |
 | **6** | **Hinglish AI Voice** | `PaymentAttempt` (`voice_queue`) | `silent_debtor` | Dispatches a conversational Hinglish voice recovery call with full transcript logged to the audit trail. |
 
@@ -115,62 +115,14 @@ Guardrails are **hardcoded programmatically in the engine**, never left to LLM d
 
 ---
 
-## 🧱 Technology Stack & Data Model
+## 🧱 Technology Stack
 
-### Stack:
 * **Framework**: Next.js 15 (App Router, Server Components, Server Actions)
 * **Language**: TypeScript 5.9
 * **Database & ORM**: SQLite with Prisma ORM 6.14
 * **Styling**: Tailwind CSS 3.4
-* **Charts**: Recharts 3.10
+* **Charts & Telemetry**: Recharts 3.10
 * **Icons**: Lucide React
-
-### Prisma Schema (`prisma/schema.prisma`):
-```prisma
-model Customer {
-  id            String   @id
-  name          String
-  email         String
-  phone         String
-  ltvPaise      Int
-  riskTier      String   // standard / high / silent
-  contactPrefs  String   // email / sms / whatsapp
-  dndStartHour  Int      @default(21)
-  dndEndHour    Int      @default(9)
-  optedOut      Boolean  @default(false)
-  paydayDay     Int      @default(1)
-  // Relations: subscriptions, invoices, checkouts, mandates, cases...
-}
-
-model RecoveryCase {
-  id               String    @id
-  customerId       String
-  direction        String    // failed_subscription, b2b_receivables, checkout_dropoff, etc.
-  rootCause        String    // insufficient_funds, fraud_suspected, expired_card, etc.
-  fsmState         String    // OPEN, RETRY_1, RETRY_2, RETRY_3, NUDGE_SENT, CLOSED, HUMAN_ESCALATED
-  status           String    // open, in_progress, recovered, escalated, lost, opted_out
-  amountAtRisk     Int
-  amountRecovered  Int       @default(0)
-  attemptsUsed     Int       @default(0)
-  policyVersion    String
-  stoppedReason    String?
-  promiseDate      DateTime?
-  audits           AuditLog[]
-}
-
-model AuditLog {
-  id            String       @id
-  caseId        String
-  timestamp     DateTime
-  actor         String       // system / agent / human
-  action        String
-  inputJson     String
-  outputJson    String
-  policyVersion String
-  channel       String?
-  messageBody   String?
-}
-```
 
 ---
 
