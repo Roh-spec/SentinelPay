@@ -16,6 +16,8 @@
 - [Getting Started](#-getting-started)
 - [Versioned Policy Engine](#-versioned-policy-engine)
 - [API Reference](#-api-reference)
+- [Future Roadmap & Scalability Improvements](#-future-roadmap--scalability-improvements)
+- [Security & Compliance](#-security--compliance)
 
 ---
 
@@ -214,6 +216,34 @@ All business logic and recovery rules are isolated in versioned JSON data rather
 | `/api/cases` | `GET` | Returns paginated, filterable list of recovery cases. |
 | `/api/cases/[id]` | `GET` | Returns single case details, source record, and full audit logs. |
 | `/api/metrics` | `GET` | Returns aggregated metrics (Total at risk, recovered, yield rate, stopping rules). |
+
+---
+
+## 🚀 Future Roadmap & Scalability Improvements
+
+To scale SentinelPay from a single-node engine into an enterprise-grade infrastructure handling millions of daily recovery transactions, the following enhancements are planned:
+
+### 1. High-Throughput Distributed Architecture
+* **Asynchronous Queue & Distributed Workers**: Decouple signal ingestion from recovery execution using **BullMQ / Redis Streams / Apache Kafka**. Worker pods consume case transition jobs with exponential backoff and rate-limiting.
+* **Distributed Locking & Concurrency Control**: Implement Redis Redlock or database row-level versioning (`SELECT ... FOR UPDATE` / optimistic locking) to eliminate race conditions between concurrent webhook retries and manual payments.
+* **Enterprise Database Migration**: Transition from SQLite to sharded **PostgreSQL / CockroachDB** with connection pooling (**PgBouncer**) and table partitioning by merchant/month.
+
+### 2. High-Performance Telemetry & OLAP
+* **Real-Time OLAP Data Layer**: Offload aggregation queries from the transactional database to **ClickHouse** or **TimescaleDB**, enabling sub-second KPI rollups across 100M+ recovery cases without in-memory JavaScript heap limits.
+* **Materialized Rollup Views**: Pre-aggregate hourly and daily recovery metrics at the database level for instant dashboard hydration.
+
+### 3. Multi-Tenancy & No-Code Policy Studio
+* **Multi-Tenant Scoping**: Introduce `merchantId` and `organizationId` multi-tenant boundaries with Row-Level Security (RLS) to support independent SaaS tenants and gateway providers.
+* **Visual No-Code Policy Studio**: An interactive drag-and-drop web interface allowing merchant ops teams to customize retry intervals, discount budgets, and tone ladders without modifying JSON files.
+
+### 4. Advanced AI & Live Gateway Integrations
+* **Predictive ML Retry Optimizer**: Train lightweight machine learning models (e.g., LightGBM) on historical bank clearing rates to predict the exact hour of highest card authorization success per customer.
+* **Interactive Hinglish Voice Synthesis**: Integrate live real-time speech synthesis (ElevenLabs / Azure Speech API) with WebRTC browser playback for the Hinglish debt recovery module.
+* **Direct Gateway Webhook Connectors**: Plug-and-play webhook adaptors for Razorpay, Stripe, Cashfree, Twilio, and Exotel.
+
+### 5. Developer Experience & Usability
+* **One-Click Docker Compose Deployment**: Containerized deployment package (`docker compose up`) bundling PostgreSQL, Redis, and Next.js.
+* **Cryptographic Compliance Export**: One-click generation of PDF/CSV financial audit reports containing SHA-256 integrity verification hashes for banking audits.
 
 ---
 
